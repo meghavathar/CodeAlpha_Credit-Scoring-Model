@@ -4,31 +4,46 @@ import joblib
 
 
 # ============================================================
+# PAGE CONFIGURATION
+# ============================================================
+
+st.set_page_config(
+    page_title="Credit Risk Prediction",
+    page_icon="💳",
+    layout="centered"
+)
+
+
+# ============================================================
 # LOAD TRAINED MODEL
 # ============================================================
 
-model = joblib.load("credit_score_model.pkl")
-
+try:
+    model = joblib.load("credit_score_model.pkl")
+except Exception as e:
+    st.error("❌ Could not load the trained model.")
+    st.write("Make sure 'credit_score_model.pkl' is in the same folder as app.py.")
+    st.stop()
 
 
 # ============================================================
 # PAGE TITLE
 # ============================================================
 
-st.set_page_config(
-    page_title="Credit Risk Prediction",
-    page_icon="💳"
+st.title("💳 Credit Risk Prediction")
+
+st.write(
+    "Enter the applicant details below to predict whether "
+    "the applicant has higher or lower credit risk."
 )
 
-st.title("💳 Credit Risk Prediction")
-st.write("Enter the applicant details below to predict credit risk.")
-
 
 # ============================================================
-# USER INPUTS
+# APPLICANT INFORMATION
 # ============================================================
 
-st.subheader("Applicant Information")
+st.subheader("👤 Applicant Information")
+
 
 person_age = st.number_input(
     "Person Age",
@@ -37,16 +52,19 @@ person_age = st.number_input(
     value=25
 )
 
+
 person_income = st.number_input(
     "Person Income",
     min_value=0,
     value=50000
 )
 
+
 person_home_ownership = st.selectbox(
     "Home Ownership",
     ["RENT", "OWN", "MORTGAGE", "OTHER"]
 )
+
 
 person_emp_length = st.number_input(
     "Employment Length (Years)",
@@ -54,6 +72,7 @@ person_emp_length = st.number_input(
     max_value=100.0,
     value=5.0
 )
+
 
 loan_intent = st.selectbox(
     "Loan Intent",
@@ -67,16 +86,19 @@ loan_intent = st.selectbox(
     ]
 )
 
+
 loan_grade = st.selectbox(
     "Loan Grade",
     ["A", "B", "C", "D", "E", "F", "G"]
 )
+
 
 loan_amnt = st.number_input(
     "Loan Amount",
     min_value=0,
     value=10000
 )
+
 
 loan_int_rate = st.number_input(
     "Loan Interest Rate (%)",
@@ -85,6 +107,7 @@ loan_int_rate = st.number_input(
     value=10.0
 )
 
+
 loan_percent_income = st.number_input(
     "Loan Percent of Income",
     min_value=0.0,
@@ -92,10 +115,12 @@ loan_percent_income = st.number_input(
     value=0.20
 )
 
+
 cb_person_default_on_file = st.selectbox(
     "Previous Default on File",
     ["Y", "N"]
 )
+
 
 cb_person_cred_hist_length = st.number_input(
     "Credit History Length (Years)",
@@ -109,13 +134,9 @@ cb_person_cred_hist_length = st.number_input(
 # FEATURE ENGINEERING
 # ============================================================
 
-loan_to_income = (
-    loan_amnt / (person_income + 1)
-)
+loan_to_income = loan_amnt / (person_income + 1)
 
-income_per_emp_year = (
-    person_income / (person_emp_length + 1)
-)
+income_per_emp_year = person_income / (person_emp_length + 1)
 
 loan_per_credit_year = (
     loan_amnt / (cb_person_cred_hist_length + 1)
@@ -123,10 +144,14 @@ loan_per_credit_year = (
 
 
 # ============================================================
-# PREDICTION
+# PREDICTION BUTTON
 # ============================================================
 
-if st.button("Predict Credit Risk"):
+if st.button("🔍 Predict Credit Risk", use_container_width=True):
+
+    # --------------------------------------------------------
+    # CREATE INPUT DATAFRAME
+    # --------------------------------------------------------
 
     input_data = pd.DataFrame({
 
@@ -184,33 +209,50 @@ if st.button("Predict Credit Risk"):
     })
 
 
-    # Make prediction
-    prediction = model.predict(input_data)[0]
+    # --------------------------------------------------------
+    # MAKE PREDICTION
+    # --------------------------------------------------------
 
-    # Get probability
-    probability = model.predict_proba(input_data)[0][1]
+    try:
+
+        prediction = model.predict(input_data)[0]
+
+        probability = model.predict_proba(input_data)[0][1]
 
 
-    # ========================================================
-    # DISPLAY RESULT
-    # ========================================================
+        # ----------------------------------------------------
+        # DISPLAY RESULT
+        # ----------------------------------------------------
 
-    st.subheader("Prediction Result")
+        st.subheader("📊 Prediction Result")
 
-    if prediction == 1:
 
-        st.error("⚠️ Higher Credit Risk")
+        if prediction == 1:
+
+            st.error("⚠️ Higher Credit Risk")
+
+            st.write(
+                f"Probability of Default: "
+                f"**{probability * 100:.2f}%**"
+            )
+
+        else:
+
+            st.success("✅ Lower Credit Risk")
+
+            st.write(
+                f"Probability of Default: "
+                f"**{probability * 100:.2f}%**"
+            )
+
+
+    except Exception as e:
+
+        st.error("❌ Prediction failed.")
 
         st.write(
-            f"Probability of default: "
-            f"{probability * 100:.2f}%"
+            "There is a mismatch between the model and "
+            "the input features."
         )
 
-    else:
-
-        st.success("✅ Lower Credit Risk")
-
-        st.write(
-            f"Probability of default: "
-            f"{probability * 100:.2f}%"
-        )
+        st.code(str(e))
