@@ -43,7 +43,7 @@ from sklearn.metrics import (
 # 2. LOAD DATASET
 # ============================================================
 
-df = pd.read_csv("credit_risk_dataset.csv")
+df = pd.read_csv("Credit_risk_dataset.csv")
 
 print("\n==============================")
 print("CREDIT RISK DATASET")
