@@ -970,7 +970,6 @@ joblib.dump(
     random_forest_model,
 
     "credit_score_model.pkl"
-    "credit_score_scaler.pkl"
 
 )
 
