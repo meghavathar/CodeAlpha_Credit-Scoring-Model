@@ -8,6 +8,7 @@ import joblib
 # ============================================================
 
 model = joblib.load("credit_score_model.pkl")
+scaler = joblib.load("credit_score_scaler.py")
 
 
 # ============================================================
